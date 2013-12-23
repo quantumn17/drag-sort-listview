@@ -1390,6 +1390,7 @@ public class DragSortListView extends ListView {
                 }
             }
         }
+    
 
         @Override
         public void onStop() {
