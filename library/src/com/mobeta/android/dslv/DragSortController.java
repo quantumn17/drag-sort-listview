@@ -77,6 +77,8 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
     private int mClickRemoveId;
 
     private int mFlingHandleId;
+    private int mBackId;
+    
     private boolean mCanDrag;
 
     private DragSortListView mDslv;
@@ -91,15 +93,19 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
      * @param dslv The DSLV instance
      */
     public DragSortController(DragSortListView dslv) {
-        this(dslv, 0, ON_DOWN, FLING_REMOVE);
+        this(dslv, 0, ON_DOWN, FLING_REMOVE, 0);
     }
 
     public DragSortController(DragSortListView dslv, int dragHandleId, int dragInitMode, int removeMode) {
-        this(dslv, dragHandleId, dragInitMode, removeMode, 0);
+        this(dslv, dragHandleId, dragInitMode, removeMode, 0, 0);
     }
 
     public DragSortController(DragSortListView dslv, int dragHandleId, int dragInitMode, int removeMode, int clickRemoveId) {
-        this(dslv, dragHandleId, dragInitMode, removeMode, clickRemoveId, 0);
+        this(dslv, dragHandleId, dragInitMode, removeMode, clickRemoveId, 0, 0);
+    }
+    
+    public DragSortController(DragSortListView dslv, int dragHandleId, int dragInitMode, int removeMode, int clickRemoveId, int backId){
+    	this(dslv, dragHandleId, dragInitMode, removeMode, clickRemoveId, 0, backId);
     }
 
     /**
@@ -110,7 +116,7 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
      * the drag handle in a list item.
      */
     public DragSortController(DragSortListView dslv, int dragHandleId, int dragInitMode,
-            int removeMode, int clickRemoveId, int flingHandleId) {
+            int removeMode, int clickRemoveId, int flingHandleId, int backId) {
         super(dslv);
         mDslv = dslv;
         mDetector = new GestureDetector(dslv.getContext(), this);
@@ -120,6 +126,7 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
         mDragHandleId = dragHandleId;
         mClickRemoveId = clickRemoveId;
         mFlingHandleId = flingHandleId;
+        mBackId = backId;
         setRemoveMode(removeMode);
         setDragInitMode(dragInitMode);
     }
@@ -396,15 +403,18 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
                     mIsRemoving = true;
                     startDrag(mFlingHitPos, deltaX, deltaY);
                 }
-            } else if (mFlingHitPos != MISS) {
-                if (Math.abs(x2 - x1) > mTouchSlop && mRemoveEnabled) {
-                    mIsRemoving = true;
-                    startDrag(mFlingHitPos, deltaX, deltaY);
-                } else if (Math.abs(y2 - y1) > mTouchSlop) {
-                    mCanDrag = false; // if started to scroll the list then
-                                      // don't allow sorting nor fling-removing
-                }
-            }
+            } else if (mFlingHitPos != MISS){
+            		if (Math.abs(x2 - x1) > mTouchSlop && mRemoveEnabled
+            		//This has been to the conditional
+            		//to minimize accidental swipes when trying to scroll
+            		&& Math.abs(x2 - x1) > 2 * Math.abs(y2 - y1)) {
+            		mIsRemoving = true;
+            		startDrag(mFlingHitPos, deltaX, deltaY);
+            		} else if (Math.abs(y2 - y1) > mTouchSlop) {
+            		mCanDrag = false; // if started to scroll the list then
+            		// don't allow sorting nor fling-removing
+            		}
+            		}
         }
         // return whatever
         return false;
