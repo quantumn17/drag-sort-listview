@@ -1,5 +1,7 @@
 package com.mobeta.android.dslv;
 
+import java.util.List;
+
 import android.graphics.Point;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -21,7 +23,7 @@ import android.widget.AdapterView;
  * {@link DragSortListView} instance.
  */
 public class DragSortController extends SimpleFloatViewManager implements View.OnTouchListener, GestureDetector.OnGestureListener {
-
+public static final String TAG = "DragSortController";
     /**
      * Drag init mode enum.
      */
@@ -83,6 +85,7 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
 
     private DragSortListView mDslv;
     private int mPositionX;
+    
 
     /**
      * Calls {@link #DragSortController(DragSortListView, int)} with a
@@ -130,6 +133,8 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
         setRemoveMode(removeMode);
         setDragInitMode(dragInitMode);
     }
+  
+
 
 
     public int getDragInitMode() {
@@ -457,7 +462,7 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
                 @Override
                 public final boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
                         float velocityY) {
-                    Log.d("mobeta", "on fling remove called");
+                    Log.d(TAG, "on fling remove called");
                     if (mRemoveEnabled && mIsRemoving) {
                         int w = mDslv.getWidth();
                         int minPos = w / 5;
@@ -465,11 +470,11 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
                             if (mPositionX > -minPos) {
                                 mDslv.stopDragWithVelocity(true, velocityX);
                             }
-                        } /*else if (velocityX < -mFlingSpeed) {
+                        } else if (velocityX < -mFlingSpeed) {
                             if (mPositionX < minPos) {
                                 mDslv.stopDragWithVelocity(true, velocityX);
                             }
-                        }*/
+                        }
                         mIsRemoving = false;
                     }
                     return false;

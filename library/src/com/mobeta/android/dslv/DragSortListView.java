@@ -21,6 +21,12 @@
 
 package com.mobeta.android.dslv;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.database.DataSetObserver;
@@ -44,11 +50,6 @@ import android.widget.Checkable;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-
 /**
  * ListView subclass that mediates drag and drop resorting of items.
  * 
@@ -57,7 +58,7 @@ import java.util.ArrayList;
  *
  */
 public class DragSortListView extends ListView {
-    
+    public static final String TAG = "DragSortListView";
     
     /**
      * The View that floats above the ListView and represents
@@ -437,7 +438,11 @@ public class DragSortListView extends ListView {
 
     private boolean mUseRemoveVelocity;
     private float mRemoveVelocityX = 0;
+    
 
+    private List<Boolean> mBackViewVisible = new ArrayList<Boolean>();
+    private int mBackViewId;
+    
     public DragSortListView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -558,7 +563,9 @@ public class DragSortListView extends ListView {
 
             @Override
             public void onChanged() {
-                cancel();
+            	super.onChanged();
+				ensureOpenedListSize();
+            	cancel();
             }
 
             @Override
@@ -605,6 +612,8 @@ public class DragSortListView extends ListView {
     public void setAdapter(ListAdapter adapter) {
         if (adapter != null) {
             mAdapterWrapper = new AdapterWrapper(adapter);
+            ensureOpenedListSize();
+            
             adapter.registerDataSetObserver(mObserver);
 
             if (adapter instanceof DropListener) {
@@ -623,6 +632,20 @@ public class DragSortListView extends ListView {
         super.setAdapter(mAdapterWrapper);
     }
 
+    
+    /**
+     * Adds new items when adapter is modified
+     */
+    public void ensureOpenedListSize() {
+        if (getInputAdapter() != null) {
+            int count = getInputAdapter().getCount();
+            for (int i = mBackViewVisible.size(); i <= count; i++) {
+            	mBackViewVisible.add(false);
+            }
+        }
+    }
+    
+    
     /**
      * As opposed to {@link ListView#getAdapter()}, which returns
      * a heavily wrapped ListAdapter (DragSortListView wraps the
@@ -718,12 +741,16 @@ public class DragSortListView extends ListView {
                 View oldChild = v.getChildAt(0);
 
                 child = mAdapter.getView(position, oldChild, DragSortListView.this);
+                
                 if (child != oldChild) {
                     // shouldn't get here if user is reusing convertViews
                     // properly
                     if (oldChild != null) {
                         v.removeViewAt(0);
                     }
+                    
+                    //if(mBackViewVisible.get(position)) {
+                  
                     v.addView(child);
                 }
             } else {
@@ -736,6 +763,9 @@ public class DragSortListView extends ListView {
                 v.setLayoutParams(new AbsListView.LayoutParams(
                         ViewGroup.LayoutParams.FILL_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT));
+                //
+                
+               
                 v.addView(child);
             }
 
@@ -743,6 +773,15 @@ public class DragSortListView extends ListView {
             // View needs to be measured if measurement is required.
             adjustItem(position + getHeaderViewsCount(), v, true);
 
+            if(mBackViewVisible.get(position)) {
+            	v.setVisibility(INVISIBLE);
+            	v = (DragSortItemView) convertView.findViewById((R.styleable.DragSortListView_back_view_id));
+            	v.setVisibility(VISIBLE);
+            	
+            } else {
+            	v.setBackgroundColor(Color.BLUE);
+            }
+            
             return v;
         }
     }
@@ -1347,11 +1386,12 @@ public class DragSortListView extends ListView {
 
             final int firstVis = getFirstVisiblePosition();
             View item = getChildAt(mFirstPos - firstVis);
+            
             ViewGroup.LayoutParams lp;
             int blank;
 
             if (mUseRemoveVelocity) {
-                float dt = (float) (SystemClock.uptimeMillis() - mStartTime) / 1000;
+            	float dt = (float) (SystemClock.uptimeMillis() - mStartTime) / 1000;
                 if (dt == 0)
                     return;
                 float dx = mRemoveVelocityX * dt;
@@ -1364,20 +1404,32 @@ public class DragSortListView extends ListView {
                     doDragFloatView(true);
                     return;
                 }
+            } 
+            
+            if(mRemoveVelocityX < 0){
+	            //item.setVisibility(VISIBLE);
+	            //item.setBackgroundColor(Color.CYAN);
+	            //mRemoveVelocityX = 0;
+            } else {            
+	            if (item != null) {
+	
+	                if (mFirstChildHeight == -1) {
+	                    mFirstChildHeight = getChildHeight(mFirstPos, item, false);
+	                    mFirstStartBlank = (float) (item.getHeight() - mFirstChildHeight);
+	                }
+	                blank = Math.max((int) (f * mFirstStartBlank), 1);
+	                lp = item.getLayoutParams();
+	                lp.height = mFirstChildHeight + blank;
+	                item.setLayoutParams(lp);
+	            }
             }
-
-            if (item != null) {
-                if (mFirstChildHeight == -1) {
-                    mFirstChildHeight = getChildHeight(mFirstPos, item, false);
-                    mFirstStartBlank = (float) (item.getHeight() - mFirstChildHeight);
-                }
-                blank = Math.max((int) (f * mFirstStartBlank), 1);
-                lp = item.getLayoutParams();
-                lp.height = mFirstChildHeight + blank;
-                item.setLayoutParams(lp);
-            }
+            
+            //Get the back layout, and make it visible
+            //Rewire the right swipe to bring back the front view
+            
             if (mSecondPos != mFirstPos) {
                 item = getChildAt(mSecondPos - firstVis);
+                //item.setBackgroundColor(Color.GREEN);
                 if (item != null) {
                     if (mSecondChildHeight == -1) {
                         mSecondChildHeight = getChildHeight(mSecondPos, item, false);
@@ -1394,7 +1446,8 @@ public class DragSortListView extends ListView {
 
         @Override
         public void onStop() {
-            doRemoveItem();
+        	
+        	doRemoveItem();
         }
     }
 
@@ -1440,10 +1493,24 @@ public class DragSortListView extends ListView {
                 }
             }
 
-            if (mRemoveAnimator != null) {
-                mRemoveAnimator.start();
+            if(/*mRemoveVelocityX > 0*/true){
+	            if (mRemoveAnimator != null) {
+	                mRemoveAnimator.start();
+	            } else {
+	            	if(velocityX > 0){
+	            		Log.d(TAG, "Velocity X " + velocityX);
+	            		doRemoveItem(which);
+	            	} else {
+	            		View item = getChildAt(mSrcPos);
+	                	mBackViewVisible.set(mSrcPos, true);
+	            		}
+	            	}
+	            }
             } else {
-                doRemoveItem(which);
+            	View v = getChildAt(mSrcPos - getFirstVisiblePosition());
+        		if (v != null){
+        			v.setVisibility(View.VISIBLE);
+        			v.setBackgroundColor(Color.GREEN);
             }
         }
     }
@@ -1517,26 +1584,39 @@ public class DragSortListView extends ListView {
     }
 
     private void doRemoveItem() {
-        doRemoveItem(mSrcPos - getHeaderViewsCount());
+        Log.d(TAG, "doRemoveItem() called");
+    	
+    	doRemoveItem(mSrcPos - getHeaderViewsCount());
     }
-
+    
     /**
      * Removes dragged item from the list. Calls RemoveListener.
      */
     private void doRemoveItem(int which) {
-        // must set to avoid cancelDrag being called from the
+        
+    	
+    	
+    	Log.d(TAG, "doRemoveItem " + which + " called");
+    	// must set to avoid cancelDrag being called from the
         // DataSetObserver
         mDragState = REMOVING;
 
         // end it
-        if (mRemoveListener != null) {
-            mRemoveListener.remove(which);
+        
+        if(mRemoveVelocityX > 0){
+	        if (mRemoveListener != null) {
+	           mRemoveListener.remove(which);
+	        }
+	        mBackViewVisible.remove(which);
+        } else {
+        	mBackViewVisible.set(which, true);
         }
 
-        destroyFloatView();
-
-        adjustOnReorder();
-        clearPositions();
+        
+        	destroyFloatView();
+        	adjustOnReorder();
+        	clearPositions();
+        
 
         // now the drag is done
         if (mInTouchEvent) {
@@ -2318,7 +2398,7 @@ public class DragSortListView extends ListView {
         mBlockLayoutRequests = true;
 
         updateFloatView();
-
+        
         int oldFirstExpPos = mFirstExpPos;
         int oldSecondExpPos = mSecondExpPos;
 
