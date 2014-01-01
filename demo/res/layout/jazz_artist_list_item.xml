@@ -1,6 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
+ <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="fill_parent"
+             android:layout_height="fill_parent"
+        >
+ 
+ <LinearLayout
+      		android:layout_width="fill_parent"
+ 			android:layout_height="wrap_content"
+  			android:orientation="horizontal"
+            android:id="@+id/back"
+            android:tag="back"
+            >
+
+        <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/example_row_b_action_1"
+                android:text="open"/>
+
+        <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/example_row_b_action_2"
+                android:text="googlePlay"/>
+
+        <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/example_row_b_action_3"
+                android:text="uninstall"/>
+
+    </LinearLayout>
+
+
+
 <LinearLayout
-  xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/front"
   android:layout_width="fill_parent"
   android:layout_height="wrap_content"
   android:orientation="horizontal">
@@ -28,3 +63,7 @@
     android:layout_height="fill_parent"
     android:layout_weight="0" />
 </LinearLayout>
+
+
+
+</FrameLayout>

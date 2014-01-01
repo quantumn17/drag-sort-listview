@@ -26,5 +26,6 @@
     <attr name="fling_handle_id" format="integer" />
     <attr name="click_remove_id" format="integer" />
     <attr name="use_default_controller" format="boolean" />
+    <attr name="back_view_id" format="integer"/>
   </declare-styleable>
 </resources>
