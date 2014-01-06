@@ -140,7 +140,7 @@ public abstract class DragSortCursorAdapter extends CursorAdapter implements Dra
      * @see DragSortListView.RemoveListener#remove(int)
      */
     @Override
-    public void remove(int which) {
+    public void swipe(int which) {
         int cursorPos = mListMapping.get(which, which);
         if (!mRemovedCursorPositions.contains(cursorPos)) {
             mRemovedCursorPositions.add(cursorPos);

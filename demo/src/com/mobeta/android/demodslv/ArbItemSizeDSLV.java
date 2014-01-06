@@ -35,10 +35,10 @@ public class ArbItemSizeDSLV extends ListActivity {
             }
         };
 
-    private DragSortListView.RemoveListener onRemove = 
-        new DragSortListView.RemoveListener() {
+    private DragSortListView.RightSwipeListener onRemove = 
+        new DragSortListView.RightSwipeListener() {
             @Override
-            public void remove(int which) {
+            public void swipe(int which) {
                 adapter.remove(adapter.getItem(which));
             }
         };
@@ -52,7 +52,7 @@ public class ArbItemSizeDSLV extends ListActivity {
         DragSortListView lv = (DragSortListView) getListView(); 
 
         lv.setDropListener(onDrop);
-        lv.setRemoveListener(onRemove);
+        lv.setRightSwipeListener(onRemove);
 
         mArtistNames = getResources().getStringArray(R.array.jazz_artist_names);
         mArtistAlbums = getResources().getStringArray(R.array.jazz_artist_albums);

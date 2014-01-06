@@ -74,7 +74,7 @@ EnablesDialog.EnabledOkListener
         mDragEnabled = drag;
         DSLVFragment f = (DSLVFragment) getSupportFragmentManager().findFragmentByTag(mTag);
         DragSortListView dslv = (DragSortListView) f.getListView();
-        f.getController().setRemoveEnabled(remove);
+        f.getController().setSwipeEnabled(remove);
         f.getController().setSortEnabled(sort);
         dslv.setDragEnabled(drag);
     }

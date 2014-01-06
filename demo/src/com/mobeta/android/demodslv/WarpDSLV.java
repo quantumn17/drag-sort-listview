@@ -29,10 +29,10 @@ public class WarpDSLV extends ListActivity {
             }
         };
 
-    private DragSortListView.RemoveListener onRemove = 
-        new DragSortListView.RemoveListener() {
+    private DragSortListView.RightSwipeListener onRemove = 
+        new DragSortListView.RightSwipeListener() {
             @Override
-            public void remove(int which) {
+            public void swipe(int which) {
                 adapter.remove(adapter.getItem(which));
             }
         };
@@ -59,7 +59,7 @@ public class WarpDSLV extends ListActivity {
         DragSortListView lv = (DragSortListView) getListView(); 
 
         lv.setDropListener(onDrop);
-        lv.setRemoveListener(onRemove);
+        lv.setRightSwipeListener(onRemove);
         lv.setDragScrollProfile(ssProfile);
 
         array = getResources().getStringArray(R.array.countries);

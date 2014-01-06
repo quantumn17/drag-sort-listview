@@ -56,7 +56,7 @@ public class Sections extends ListActivity {
 
         public SectionController(DragSortListView dslv, SectionAdapter adapter) {
             super(dslv, R.id.text, DragSortController.ON_DOWN, 0);
-            setRemoveEnabled(false);
+            setSwipeEnabled(false);
             mDslv = dslv;
             mAdapter = adapter;
             mDivPos = adapter.getDivPosition();

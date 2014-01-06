@@ -34,10 +34,10 @@ public class DSLVFragment extends ListFragment {
                 }
             };
 
-    private DragSortListView.RemoveListener onRemove = 
-            new DragSortListView.RemoveListener() {
+    private DragSortListView.RightSwipeListener onRemove = 
+            new DragSortListView.RightSwipeListener() {
                 @Override
-                public void remove(int which) {
+                public void swipe(int which) {
                     adapter.remove(adapter.getItem(which));
                 }
             };
@@ -109,11 +109,11 @@ public class DSLVFragment extends ListFragment {
         //   removeMode = flingRight
         DragSortController controller = new DragSortController(dslv);
         controller.setDragHandleId(R.id.drag_handle);
-        controller.setClickRemoveId(R.id.click_remove);
-        controller.setRemoveEnabled(removeEnabled);
+        controller.setClickSwipeId(R.id.click_remove);
+        controller.setSwipeEnabled(removeEnabled);
         controller.setSortEnabled(sortEnabled);
         controller.setDragInitMode(dragStartMode);
-        controller.setRemoveMode(removeMode);
+        controller.setSwipeMode(removeMode);
         return controller;
     }
 
@@ -139,7 +139,7 @@ public class DSLVFragment extends ListFragment {
         mDslv = (DragSortListView) getListView(); 
 
         mDslv.setDropListener(onDrop);
-        mDslv.setRemoveListener(onRemove);
+        mDslv.setRightSwipeListener(onRemove);
 
         Bundle args = getArguments();
         int headers = 0;
