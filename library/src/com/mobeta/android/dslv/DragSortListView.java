@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.database.DataSetObserver;
@@ -57,6 +58,7 @@ import android.widget.ListView;
  * @author heycosmo
  *
  */
+@SuppressLint("NewApi")
 public class DragSortListView extends ListView {
     public static final String TAG = "DragSortListView";
     
@@ -444,6 +446,12 @@ public class DragSortListView extends ListView {
     private int mBackViewId;
     private int mFrontViewId;
     
+    
+    public List<Boolean> getBackViewVisible(){
+    	return mBackViewVisible;
+    }
+    
+    
     public DragSortListView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -528,11 +536,11 @@ public class DragSortListView extends ListView {
 
                 int backViewId = a.getResourceId(R.styleable.DragSortListView_back_view_id, 0);
                 
-                Log.d(TAG, "back view id in resource Id: " + backViewId);
+                //Log.d(TAG, "back view id in resource Id: " + backViewId);
                 
                 DragSortController controller = new DragSortController(
                         this, dragHandleId, dragInitMode, swipeMode,
-                        clickRemoveId, flingHandleId, backViewId);
+                        clickRemoveId, flingHandleId);
                 controller.setSwipeEnabled(swipeEnabled);
                 controller.setSortEnabled(sortEnabled);
                 controller.setBackgroundColor(bgColor);
@@ -544,7 +552,7 @@ public class DragSortListView extends ListView {
             mBackViewId = a.getResourceId(R.styleable.DragSortListView_back_view_id, 0);
             mFrontViewId = a.getResourceId(R.styleable.DragSortListView_front_view_id, 0);
             
-            Log.d(TAG, "mbackview view id in resource Id: " + mBackViewId);
+            //Log.d(TAG, "mbackview view id in resource Id: " + mBackViewId);
 
             a.recycle();
         }
@@ -801,8 +809,8 @@ public class DragSortListView extends ListView {
     	}
     	
     	if(position < getCount() && mBackViewVisible.get(position)) {
-        	back.setVisibility(VISIBLE);
-        	front.setVisibility(INVISIBLE);
+        	front.setVisibility(VISIBLE);
+    		back.setVisibility(VISIBLE);
         	//Log.d(TAG, "position " + position + "set to invisible from view");
         } else {
         	front.setVisibility(VISIBLE);
@@ -1407,7 +1415,8 @@ public class DragSortListView extends ListView {
             }
         }
 
-        @Override
+        @SuppressLint("NewApi")
+		@Override
         public void onUpdate(float frac, float smoothFrac) {
             float f = 1f - smoothFrac;
 
@@ -1435,11 +1444,11 @@ public class DragSortListView extends ListView {
             
             if(mSwipeVelocityX < 0){
             	item.setVisibility(VISIBLE);
+            	
             	View back = item.findViewById(mBackViewId);
             	View front = item.findViewById(mFrontViewId);
             	
             	back.setVisibility(VISIBLE);
-            	front.setVisibility(INVISIBLE);
             } else {
             	//I still don't understand what this code does. 
 	            if (item != null) {
@@ -1504,6 +1513,7 @@ public class DragSortListView extends ListView {
                 mFloatPos = mSrcPos;
                 View v = getChildAt(mSrcPos - getFirstVisiblePosition());
                 if (v != null) {
+                	
                     v.setVisibility(View.INVISIBLE);
                 }
             }
@@ -1526,7 +1536,7 @@ public class DragSortListView extends ListView {
                 mSwipeAnimator.start();
             } else {
             	         
-	            Log.d(TAG, "Velocity X " + velocityX);
+	            //Log.d(TAG, "Velocity X " + velocityX);
 	    		doSwipeItem(which);
             }
         }
@@ -1601,7 +1611,7 @@ public class DragSortListView extends ListView {
     }
 
     private void doSwipeItem() {
-        Log.d(TAG, "doSwipeItem() called");
+       // Log.d(TAG, "doSwipeItem() called");
     	
     	doSwipeItem(mSrcPos - getHeaderViewsCount());
     }
@@ -1610,10 +1620,7 @@ public class DragSortListView extends ListView {
      * Swipes dragged item from the list. Calls RightSwipeListener.
      */
     private void doSwipeItem(int which) {
-        
-    	
-    	
-    	Log.d(TAG, "doSwipeItem " + which + " called");
+        //Log.d(TAG, "doSwipeItem " + which + " called");
     	// must set to avoid cancelDrag being called from the
         // DataSetObserver
         mDragState = REMOVING;
@@ -1625,17 +1632,19 @@ public class DragSortListView extends ListView {
 	           mRightSwipeListener.swipe(which);
 	        }
 	        mBackViewVisible.remove(which);
+
+	    	adjustOnReorder();
+	    	clearPositions();
+	    	mInTouchEvent = false;
         } else {
         	
         	
         	mBackViewVisible.set(which, true);
-        	Log.d(TAG, "BackView at " + which + " set to true");
+        	//Log.d(TAG, "BackView at " + which + " set to true");
         }
 
         
     	destroyFloatView();
-    	adjustOnReorder();
-    	clearPositions();
         
         // now the drag is done
         if (mInTouchEvent) {
@@ -1763,7 +1772,7 @@ public class DragSortListView extends ListView {
             }
         }
 
-        return more;
+        return true;
     }
 
     private void doActionUpOrCancel() {
@@ -1848,7 +1857,7 @@ public class DragSortListView extends ListView {
         if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
             mInTouchEvent = false;
         }
-
+        //Log.d(TAG, "touch intercept " + intercept);
         return intercept;
     }
 
@@ -2017,12 +2026,17 @@ public class DragSortListView extends ListView {
         int vis = View.VISIBLE;
 
         if (position == mSrcPos && mFloatView != null) {
-            vis = View.INVISIBLE;
+            
+        	
+        	vis = View.INVISIBLE;
         }
         
 
         if (vis != oldVis) {
             v.setVisibility(vis);
+            
+            
+            
         }
     }
 
@@ -2274,9 +2288,10 @@ public class DragSortListView extends ListView {
                 break;
             case MotionEvent.ACTION_MOVE:
                 continueDrag((int) ev.getX(), (int) ev.getY());
+                Log.d(TAG, "we are in a drag");
                 break;
         }
-
+        
         return true;
     }
 
@@ -2311,7 +2326,8 @@ public class DragSortListView extends ListView {
      */
     public boolean startDrag(int position, int dragFlags, int deltaX, int deltaY) {
         if (!mInTouchEvent || mFloatViewManager == null) {
-            return false;
+            //Log.d(TAG, "Failed to start drag");
+        	return false;
         }
 
         View v = mFloatViewManager.onCreateFloatView(position);
@@ -2349,6 +2365,8 @@ public class DragSortListView extends ListView {
     public boolean startDrag(int position, View floatView, int dragFlags, int deltaX, int deltaY) {
         if (mDragState != IDLE || !mInTouchEvent || mFloatView != null || floatView == null
                 || !mDragEnabled) {
+        	
+        	//Log.d(TAG, "Drag start failed");
             return false;
         }
 
@@ -2382,7 +2400,14 @@ public class DragSortListView extends ListView {
         final View srcItem = getChildAt(mSrcPos - getFirstVisiblePosition());
 
         if (srcItem != null) {
-            srcItem.setVisibility(View.INVISIBLE);
+            //Set this to visible if want to preserve original listitem view
+        	
+        	srcItem.setVisibility(View.INVISIBLE);
+            
+            View front = srcItem.findViewById(mBackViewId);
+        	View back = srcItem.findViewById(mFrontViewId);
+        	
+        	back.setVisibility(VISIBLE);
         }
 
         if (mTrackDragSort) {
@@ -2573,6 +2598,8 @@ public class DragSortListView extends ListView {
          * {@link #onCreateFloatView(int)}.
          */
         public void onDestroyFloatView(View floatView);
+
+		boolean onInterceptTouchEvent(MotionEvent ev);
     }
 
     public void setFloatViewManager(FloatViewManager manager) {
@@ -2695,7 +2722,7 @@ public class DragSortListView extends ListView {
      * dealing with movable list items: for an adapter that <em>does</em> have
      * stable IDs, ListView will attempt to locate each item based on its ID and
      * move the check state from the item's old position to the new position —
-     * which is all fine and good (and swipes the need for calling this
+     * which is all fine and good (and removess the need for calling this
      * function), except for the half-baked approach. Apparently to save time in
      * the naive algorithm used, ListView will only search for an ID in the
      * close neighborhood of the old position. If the user moves an item too far

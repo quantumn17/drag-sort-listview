@@ -5,6 +5,7 @@ import android.graphics.Point;
 import android.graphics.Color;
 import android.widget.ListView;
 import android.widget.ImageView;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.util.Log;
@@ -84,6 +85,12 @@ public class SimpleFloatViewManager implements DragSortListView.FloatViewManager
         mFloatBitmap.recycle();
         mFloatBitmap = null;
     }
+
+	@Override
+	public boolean onInterceptTouchEvent(MotionEvent ev) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 }
 

@@ -93,20 +93,17 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
      * @param dslv The DSLV instance
      */
     public DragSortController(DragSortListView dslv) {
-        this(dslv, 0, ON_DOWN, FLING_REMOVE, 0);
+        this(dslv, 0, ON_DOWN, FLING_REMOVE);
     }
 
     public DragSortController(DragSortListView dslv, int dragHandleId, int dragInitMode, int swipeMode) {
-        this(dslv, dragHandleId, dragInitMode, swipeMode, 0, 0);
+        this(dslv, dragHandleId, dragInitMode, swipeMode, 0);
     }
 
-    public DragSortController(DragSortListView dslv, int dragHandleId, int dragInitMode, int swipeMode, int clickSwipeId) {
-        this(dslv, dragHandleId, dragInitMode, swipeMode, clickSwipeId, 0, 0);
-    }
-    
-    public DragSortController(DragSortListView dslv, int dragHandleId, int dragInitMode, int swipeMode, int clickSwipeId, int backId){
-    	this(dslv, dragHandleId, dragInitMode, swipeMode, clickSwipeId, 0, backId);
-    	Log.d(TAG, "back view id in constructor: " + backId);
+        
+    public DragSortController(DragSortListView dslv, int dragHandleId, int dragInitMode, int swipeMode, int clickSwipeId){
+    	this(dslv, dragHandleId, dragInitMode, swipeMode, clickSwipeId, 0);
+    	
     }
 
     /**
@@ -117,8 +114,9 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
      * the drag handle in a list item.
      */
     public DragSortController(DragSortListView dslv, int dragHandleId, int dragInitMode,
-            int swipeMode, int clickSwipeId, int flingHandleId, int backId) {
+            int swipeMode, int clickSwipeId, int flingHandleId) {
         super(dslv);
+        
         mDslv = dslv;
         mDetector = new GestureDetector(dslv.getContext(), this);
         mFlingSwipeDetector = new GestureDetector(dslv.getContext(), mFlingSwipeListener);
@@ -127,10 +125,7 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
         mDragHandleId = dragHandleId;
         mClickSwipeId = clickSwipeId;
         mFlingHandleId = flingHandleId;
-        mBackId = backId;
         Log.d(TAG, "flingHandle id in setter: " + flingHandleId);
-        Log.d(TAG, "back view id in setter: " + backId);
-                
         setSwipeMode(swipeMode);
         setDragInitMode(dragInitMode);
     }
@@ -223,10 +218,7 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
      * appears after a swipe
      */
     
-    public void setBackId(int id){
-    	mBackId = id;
-    }
-
+    
     /**
      * Sets flags to restrict certain motions of the floating View
      * based on DragSortController settings (such as swipe mode).
@@ -284,9 +276,10 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
                 mDragging = false;
                 break;
         }
-
+        
         return false;
     }
+    
 
     /**
      * Overrides to provide fading when slide removal is enabled.
@@ -317,7 +310,7 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
     }
 
     public int startFlingPosition(MotionEvent ev) {
-        Log.d("mobeta", "startFlingPosition called");
+       // Log.d("mobeta", "startFlingPosition called");
     	return mSwipeMode == FLING_REMOVE ? flingHandleHitPosition(ev) : MISS;
         
     }
@@ -341,7 +334,7 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
     }
 
     public int viewIdHitPosition(MotionEvent ev, int id) {
-    	Log.d("mobeta", "viewIdHitPosition called");
+    	//Log.d("mobeta", "viewIdHitPosition called");
     	final int x = (int) ev.getX();
         final int y = (int) ev.getY();
 
@@ -356,7 +349,7 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
         if (touchPos != AdapterView.INVALID_POSITION && touchPos >= numHeaders
                 && touchPos < (count - numFooters)) {
 
-            Log.d("mobeta", "touch down on position " + String.valueOf(touchPos - mDslv.getFirstVisiblePosition()));
+            //Log.d(TAG, "touch down on position " + String.valueOf(touchPos - mDslv.getFirstVisiblePosition()));
             final View item = mDslv.getChildAt(touchPos - mDslv.getFirstVisiblePosition());
             final int rawX = (int) ev.getRawX();
             final int rawY = (int) ev.getRawY();
@@ -382,7 +375,7 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
 
     @Override
     public boolean onDown(MotionEvent ev) {
-        Log.d(TAG, "onDown called");
+        //Log.d(TAG, "onDown called");
     	if (mSwipeEnabled && mSwipeMode == CLICK_REMOVE) {
             mClickSwipeHitPos = viewIdHitPosition(ev, mClickSwipeId);
         }
@@ -402,7 +395,6 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-
         final int x1 = (int) e1.getX();
         final int y1 = (int) e1.getY();
         final int x2 = (int) e2.getX();
@@ -410,6 +402,8 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
         final int deltaX = x2 - mItemX;
         final int deltaY = y2 - mItemY;
 
+        //Log.d("TAG", "flinghitposition is " + String.valueOf(mFlingHitPos));
+        
         if (mCanDrag && !mDragging && (mHitPos != MISS || mFlingHitPos != MISS)) {
             if (mHitPos != MISS) {
                 if (mDragInitMode == ON_DRAG && Math.abs(y2 - y1) > mTouchSlop && mSortEnabled) {
@@ -434,7 +428,8 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
             		}
         }
         // return whatever
-        return false;
+        if(mIsRemoving) return true;
+        else return false;
     }
 
     @Override
@@ -455,12 +450,18 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
     // complete the OnGestureListener interface
     @Override
     public boolean onSingleTapUp(MotionEvent ev) {
-        if (mSwipeEnabled && mSwipeMode == CLICK_REMOVE) {
+        //Log.d(TAG, "DSLV singletap up");
+    	
+    	if (mSwipeEnabled && mSwipeMode == CLICK_REMOVE) {
             if (mClickSwipeHitPos != MISS) {
                 mDslv.swipeItem(mClickSwipeHitPos - mDslv.getHeaderViewsCount());
             }
         }
-        return true;
+    	
+    	//Pass the touch event to the back view
+    	
+    	
+        return false;
     }
 
     // complete the OnGestureListener interface
@@ -481,10 +482,14 @@ public class DragSortController extends SimpleFloatViewManager implements View.O
                         if (velocityX > mFlingSpeed) {
                             if (mPositionX > -minPos) {
                                 mDslv.stopDragWithVelocity(true, velocityX, mBackId);
+                                mIsRemoving = false;
+                                return true;
                             }
                         } else if (velocityX < -mFlingSpeed) {
                             if (mPositionX < minPos) {
                                 mDslv.stopDragWithVelocity(true, velocityX, mBackId);
+                                mIsRemoving = false;
+                                return true;
                             }
                         }
                         mIsRemoving = false;
